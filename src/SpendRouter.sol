@@ -27,9 +27,6 @@ contract SpendRouter is ReentrancyGuard {
     /// @notice Expected amount to receive during spend execution
     uint256 private _expectedAmount;
 
-    /// @notice Expected token to receive during spend execution
-    address private _expectedToken;
-
     /// @dev Struct to decode addresses from extraData
     struct EncodedAddresses {
         address app;
@@ -54,7 +51,6 @@ contract SpendRouter is ReentrancyGuard {
     error UnauthorizedReceive(address sender, uint256 value);
     /// @dev Thrown when received amount doesn't match expected amount
     error UnexpectedAmount(uint256 received, uint256 expected);
-    error UnexpectedToken(address received, address expected);
     error UnauthorizedSender(address caller, address encoded);
     error MalformedExtraData(uint256 length, bytes extraData);
     error ZeroAmount();
@@ -89,7 +85,6 @@ contract SpendRouter is ReentrancyGuard {
 
         // Effects
         _expectedAmount = amount;
-        _expectedToken = permission.token;
 
         // Interactions
         try PERMISSION_MANAGER.spend(permission, amount) {
@@ -108,7 +103,6 @@ contract SpendRouter is ReentrancyGuard {
 
         // Clean up
         _expectedAmount = 0;
-        _expectedToken = address(0);
 
         return success;
     }
@@ -117,7 +111,6 @@ contract SpendRouter is ReentrancyGuard {
     receive() external payable {
         if (_expectedAmount == 0) revert UnauthorizedReceive(msg.sender, msg.value);
         if (msg.value != _expectedAmount) revert UnexpectedAmount(msg.value, _expectedAmount);
-        if (_expectedToken != NATIVE_TOKEN_ADDRESS) revert UnexpectedToken(NATIVE_TOKEN_ADDRESS, _expectedToken);
     }
 
     /// @notice Helper function to construct a properly formatted SpendPermission struct
