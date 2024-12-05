@@ -24,9 +24,6 @@ contract SpendRouter is ReentrancyGuard {
     /// @notice Native token address constant from SpendPermissionManager
     address public constant NATIVE_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    /// @notice Flag to track if we're currently executing a spend operation
-    bool private _isSpending;
-
     /// @notice Expected amount to receive during spend execution
     uint256 private _expectedAmount;
 
@@ -91,7 +88,6 @@ contract SpendRouter is ReentrancyGuard {
         if (encoded.recipient == address(0)) revert ZeroRecipientAddress();
 
         // Effects
-        _isSpending = true;
         _expectedAmount = amount;
         _expectedToken = permission.token;
 
@@ -111,7 +107,6 @@ contract SpendRouter is ReentrancyGuard {
         }
 
         // Clean up
-        _isSpending = false;
         _expectedAmount = 0;
         _expectedToken = address(0);
 
@@ -120,7 +115,7 @@ contract SpendRouter is ReentrancyGuard {
 
     /// @notice Protects against unwanted receives outside of spend execution
     receive() external payable {
-        if (!_isSpending) revert UnauthorizedReceive(msg.sender, msg.value);
+        if (_expectedAmount == 0) revert UnauthorizedReceive(msg.sender, msg.value);
         if (msg.value != _expectedAmount) revert UnexpectedAmount(msg.value, _expectedAmount);
         if (_expectedToken != NATIVE_TOKEN_ADDRESS) revert UnexpectedToken(NATIVE_TOKEN_ADDRESS, _expectedToken);
     }
