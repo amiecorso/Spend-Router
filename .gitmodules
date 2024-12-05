@@ -4,3 +4,18 @@
 [submodule "lib/spend-permissions"]
 	path = lib/spend-permissions
 	url = https://github.com/coinbase/spend-permissions
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/account-abstraction"]
+	path = lib/account-abstraction
+	url = https://github.com/eth-infinitism/account-abstraction
+[submodule "lib/solady"]
+	path = lib/solady
+	url = https://github.com/vectorized/solady
+[submodule "lib/smart-wallet"]
+	path = lib/smart-wallet
+	url = https://github.com/coinbase/smart-wallet
+[submodule "lib/magic-spend"]
+	path = lib/magic-spend
+	url = https://github.com/coinbase/magic-spend
