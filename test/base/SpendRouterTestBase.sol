@@ -68,9 +68,17 @@ contract SpendRouterTestBase is Test {
         uint48 end,
         uint256 salt
     ) internal view returns (SpendPermissionManager.SpendPermission memory) {
-        return router.constructPermission(
-            address(account), app, recipient, tokenAddress, allowance, period, start, end, salt
-        );
+        return SpendPermissionManager.SpendPermission({
+            account: address(account),
+            spender: address(router),
+            token: tokenAddress,
+            allowance: allowance,
+            period: period,
+            start: start,
+            end: end,
+            salt: salt,
+            extraData: router.encodeExtraData(app, recipient)
+        });
     }
 
     function _signPermission(SpendPermissionManager.SpendPermission memory permission)
