@@ -152,10 +152,10 @@ contract SpendRouter is ReentrancyGuard {
     }
 
     /// @dev Internal helper to decode app and recipient addresses from permission extraData
-    /// @param extraData The encoded addresses (must be exactly 64 bytes)
+    /// @param extraData The encoded addresses (must be at least 64 bytes, may contain additional app-specific data)
     /// @return encoded Struct containing decoded app and recipient addresses
     function _decodeAddresses(bytes memory extraData) internal pure returns (EncodedAddresses memory encoded) {
-        if (extraData.length != 64) revert MalformedExtraData(extraData.length, extraData);
+        if (extraData.length < 64) revert MalformedExtraData(extraData.length, extraData);
 
         (address app, address recipient) = abi.decode(extraData, (address, address));
         return EncodedAddresses({app: app, recipient: recipient});
