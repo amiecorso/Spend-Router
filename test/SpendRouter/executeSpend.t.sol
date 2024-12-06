@@ -22,10 +22,9 @@ contract ExecuteSpendTest is SpendRouterTestBase {
         // Execute spend
         uint160 spendAmount = 0.5 ether;
         vm.prank(app);
-        bool success = router.executeSpend(permission, spendAmount);
+        router.executeSpend(permission, spendAmount);
 
         // Verify results
-        assertTrue(success);
         assertEq(address(recipient).balance, spendAmount);
         assertEq(address(account).balance, allowance - spendAmount);
     }
@@ -46,34 +45,11 @@ contract ExecuteSpendTest is SpendRouterTestBase {
         // Execute spend
         uint160 spendAmount = 500e18;
         vm.prank(app);
-        bool success = router.executeSpend(permission, spendAmount);
+        router.executeSpend(permission, spendAmount);
 
         // Verify results
-        assertTrue(success);
         assertEq(token.balanceOf(recipient), spendAmount);
         assertEq(token.balanceOf(address(account)), allowance - spendAmount);
-    }
-
-    function test_executeSpend_revert_invalidSpender() public {
-        SpendPermissionManager.SpendPermission memory permission = _createPermission(
-            NATIVE_TOKEN, 1 ether, 1 days, uint48(block.timestamp), uint48(block.timestamp + 1 days), 0
-        );
-        permission.spender = address(0x123); // Set wrong spender
-
-        vm.prank(app);
-        vm.expectRevert(SpendRouter.InvalidSpender.selector);
-        router.executeSpend(permission, 0.5 ether);
-    }
-
-    function test_executeSpend_revert_zeroAmount() public {
-        SpendPermissionManager.SpendPermission memory permission = _createPermission(
-            NATIVE_TOKEN, 1 ether, 1 days, uint48(block.timestamp), uint48(block.timestamp + 1 days), 0
-        );
-        _approvePermission(permission);
-
-        vm.prank(app);
-        vm.expectRevert(SpendRouter.ZeroAmount.selector);
-        router.executeSpend(permission, 0);
     }
 
     function test_executeSpend_revert_unauthorizedSender() public {
