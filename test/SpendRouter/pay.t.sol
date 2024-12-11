@@ -5,8 +5,8 @@ import {SpendPermissionManager} from "spend-permissions/SpendPermissionManager.s
 import {SpendRouter} from "src/SpendRouter.sol";
 import {SpendRouterTestBase} from "../base/SpendRouterTestBase.sol";
 
-contract ExecuteSpendTest is SpendRouterTestBase {
-    function test_executeSpend_nativeToken() public {
+contract PayTest is SpendRouterTestBase {
+    function test_pay_nativeToken() public {
         // Create and approve permission
         uint160 allowance = 1 ether;
         uint48 period = 1 days;
@@ -22,14 +22,14 @@ contract ExecuteSpendTest is SpendRouterTestBase {
         // Execute spend
         uint160 spendAmount = 0.5 ether;
         vm.prank(app);
-        router.executeSpend(permission, spendAmount);
+        router.pay(permission, spendAmount);
 
         // Verify results
         assertEq(address(recipient).balance, spendAmount);
         assertEq(address(account).balance, allowance - spendAmount);
     }
 
-    function test_executeSpend_erc20() public {
+    function test_pay_erc20() public {
         // Create and approve permission
         uint160 allowance = 1000e18;
         uint48 period = 1 days;
@@ -45,14 +45,14 @@ contract ExecuteSpendTest is SpendRouterTestBase {
         // Execute spend
         uint160 spendAmount = 500e18;
         vm.prank(app);
-        router.executeSpend(permission, spendAmount);
+        router.pay(permission, spendAmount);
 
         // Verify results
         assertEq(token.balanceOf(recipient), spendAmount);
         assertEq(token.balanceOf(address(account)), allowance - spendAmount);
     }
 
-    function test_executeSpend_revert_unauthorizedSender() public {
+    function test_pay_revert_unauthorizedSender() public {
         SpendPermissionManager.SpendPermission memory permission = _createPermission(
             NATIVE_TOKEN, 1 ether, 1 days, uint48(block.timestamp), uint48(block.timestamp + 1 days), 0
         );
@@ -61,6 +61,6 @@ contract ExecuteSpendTest is SpendRouterTestBase {
         address unauthorizedSender = makeAddr("unauthorized");
         vm.prank(unauthorizedSender);
         vm.expectRevert(abi.encodeWithSelector(SpendRouter.UnauthorizedSender.selector, unauthorizedSender, app));
-        router.executeSpend(permission, 0.5 ether);
+        router.pay(permission, 0.5 ether);
     }
 }

@@ -19,6 +19,7 @@ contract SpendRouter {
     error UnauthorizedSender(address caller, address expected);
     error MalformedExtraData(uint256 length, bytes extraData);
     error ZeroAddress();
+    error PermissionApprovalFailed();
 
     constructor(SpendPermissionManager spendPermissionManager) {
         PERMISSION_MANAGER = spendPermissionManager;
@@ -27,21 +28,47 @@ contract SpendRouter {
     /// @notice Accept receiving native token
     receive() external payable {}
 
-    /// @notice Executes a spend using an existing permission
-    function executeSpend(SpendPermissionManager.SpendPermission calldata permission, uint160 amount) external {
+    /// @notice Batches spending and forwarding payment to defined recipient in one transation
+    function pay(SpendPermissionManager.SpendPermission calldata permission, uint160 value) external {
         // decode and verify addresses
         (address app, address recipient) = decodeExtraData(permission.extraData);
         if (msg.sender != app) revert UnauthorizedSender(msg.sender, app);
         if (recipient == address(0)) revert ZeroAddress();
 
         // spend to pull tokens into this contract
-        PERMISSION_MANAGER.spend(permission, amount);
+        PERMISSION_MANAGER.spend(permission, value);
 
         // forward the received tokens to the recipient
         if (permission.token == NATIVE_TOKEN_ADDRESS) {
-            SafeTransferLib.safeTransferETH(payable(recipient), amount);
+            SafeTransferLib.safeTransferETH(payable(recipient), value);
         } else {
-            IERC20(permission.token).safeTransfer(recipient, amount);
+            IERC20(permission.token).safeTransfer(recipient, value);
+        }
+    }
+
+    /// @notice Batches permission approval, spending, and forwarding payment to defined recipient in one transaction.
+    function payWithSignature(
+        SpendPermissionManager.SpendPermission calldata permission,
+        uint160 value,
+        bytes calldata signature
+    ) external {
+        // decode and verify addresses
+        (address app, address recipient) = decodeExtraData(permission.extraData);
+        if (msg.sender != app) revert UnauthorizedSender(msg.sender, app);
+        if (recipient == address(0)) revert ZeroAddress();
+
+        // approve permission with user signature
+        bool approved = PERMISSION_MANAGER.approveWithSignature(permission, signature);
+        if (!approved) revert PermissionApprovalFailed();
+
+        // spend to pull tokens into this contract
+        PERMISSION_MANAGER.spend(permission, value);
+
+        // forward the received tokens to the recipient
+        if (permission.token == NATIVE_TOKEN_ADDRESS) {
+            SafeTransferLib.safeTransferETH(payable(recipient), value);
+        } else {
+            IERC20(permission.token).safeTransfer(recipient, value);
         }
     }
 
