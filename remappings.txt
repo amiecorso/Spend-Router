@@ -1,7 +1,7 @@
 spend-permissions/=lib/spend-permissions/src/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 FreshCryptoLib/=lib/spend-permissions/lib/webauthn-sol/lib/FreshCryptoLib/solidity/src/
-account-abstraction/=lib/magic-spend/lib/account-abstraction/contracts/
+account-abstraction/=lib/spend-permissions/lib/account-abstraction/contracts/
 ds-test/=lib/webauthn-sol/lib/forge-std/lib/ds-test/src/
 erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
 forge-std/=lib/forge-std/src/
